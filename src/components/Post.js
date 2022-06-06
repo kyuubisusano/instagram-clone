@@ -1,56 +1,64 @@
-import { Avatar } from '@mui/material';
+import { Avatar, Box } from '@mui/material';
 import { collection, doc as Doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import { db } from '../firebase';
 import '../Post.css';
 
-function Post({postId,userName,imageUrl,caption}) {
+const postStyle = {
+  borderRadius: "10px"
+}
+
+
+function Post({postId,imageUrl,caption,ownerId}) {
 
   const [comments,setComments] = useState([])
-
+  const [owner,setOwner] = useState({});
   useEffect(() =>{
     const commentRef = collection(db, "posts",`${postId}`,"comments")
     const q= query(commentRef,orderBy("likes","desc"),limit(3));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      // console.log("data ")
+      setComments([])
       querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
         console.log(doc.id, " => ", doc.data());
-        
-        const senderRef = Doc(db, "users",`${doc.data().senderID}`)
+        const senderRef = Doc(db, "users",`${doc.data().senderId}`)
         getDoc(senderRef).then(
           sender => {
               console.log(sender.data())
               setComments(comments => [...comments, {id: doc.id,comment: doc.data() ,sender: sender.data().userName}])
           }
         )
-
-      
-       
-      
-
       });
-      // setComments(querySnapshot.docs.map(doc => ( {id: doc.id,comment: doc.data() })) )
      
     });
 
     return () =>unsubscribe()
   },[])
 
+  useEffect(() => {
+
+    const userRef = Doc(db,'users',`${ownerId}`)
+    getDoc(userRef).then(
+      doc => {
+        setOwner({userName: doc.data().userName , photoUrl: doc.data().photoUrl})
+      }
+    )
+
+  },[])
+
 
   return (
-    <div className='post'>
+    <Box sx={postStyle} className='post'>
        <div className='post__header'>
         <Avatar
         className='post__avatar'
-        alt='user'
-        src='https://images.panda.org/assets/images/pages/welcome/orangutan_1600x1000_279157.jpg'/>
-        <h3>{userName}</h3>
+        alt={owner.userName}
+        src={owner.photoUrl}/>
+        <h3>{owner.userName}</h3>
         </div>
 
     <img className='post__img' src={imageUrl} />
     <div className='post__caption'>
-      <strong>{userName}</strong> {caption} 
+       {caption} 
       </div> 
     
     <div className='post_commentSection'>
@@ -65,7 +73,7 @@ function Post({postId,userName,imageUrl,caption}) {
           }) :  null
       }
     </div>
-    </div>  
+    </Box>  
   )
 }
 
