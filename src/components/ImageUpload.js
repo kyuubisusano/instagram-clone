@@ -36,10 +36,12 @@ function ImageUpload({setOpen}) {
               console.log('File available at', downloadURL);
 
               const docRef =  addDoc(collection(db,'posts'), {
-                  userName: auth.currentUser.displayName,
                   imageUrl: downloadURL,
                   caption: caption,
-                  timestamp: serverTimestamp()
+                  ownerId: auth.currentUser.uid,
+                  timestamp: serverTimestamp(),
+                  likes: 0,
+
               })
 
               setProgress(0)
