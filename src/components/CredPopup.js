@@ -1,5 +1,5 @@
-import { Button, makeStyles , Input} from '@material-ui/core';
-import { Modal } from '@mui/material';
+import { Modal ,Button, Input, Typography, Box} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -19,20 +19,21 @@ function getModalStyle() {
     };
   }
   
-  const useStyles = makeStyles((theme) => ({
-    paper: {
-      position: 'absolute',
-      width: 400,
-      backgroundColor: theme.palette.background.paper,
-      border: '2px solid #000',
-      boxShadow: theme.shadows[5],
-      padding: theme.spacing(2, 4, 3),
-    },
-  }));
+  const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
 
 function CredPopup({open, setOpen,mode}) {
-    const classes = useStyles();
-    const [modalStyle] = React.useState(getModalStyle);
+    // const classes = useStyles();
+    // const [style] = React.useState(getModalStyle);
 
     const [email,setEmail] = useState('');
     const [userName,setUserName] = useState('');
@@ -105,7 +106,7 @@ function CredPopup({open, setOpen,mode}) {
     // },[])
 
     const signupBody = (
-        <div style={modalStyle} className={classes.paper}>
+        <Box sx={style}>
         <form className='app_credPopup'>
             <img className='app__formImg' src={logo}/>
             <Input type="text" placeholder='User Name' value={userName} onChange={e => setUserName(e.target.value)}/>
@@ -113,23 +114,23 @@ function CredPopup({open, setOpen,mode}) {
             <Input type="password" placeholder='Password' value={password} onChange={e => setPassword(e.target.value)}/>
             <Button type='submit' onClick={handleSignup}>Sign Up</Button>
         </form>
-      </div>
+      </Box>
     );
     const loginBody = (
-        <div style={modalStyle} className={classes.paper}>
+        <Box sx={style}>
         <form className='app_credPopup'>
             <img className='app__formImg' src={logo}/>
             <Input type="email" placeholder='Email' value={email} onChange={e => setEmail(e.target.value)}/>
             <Input type="password" placeholder='Password' value={password} onChange={e => setPassword(e.target.value)}/>
             <Button type='submit' onClick={handleLogin} >Login</Button>
         </form>
-      </div>
+      </Box>
     );
 
     const uploadBody = (
-        <div style={modalStyle} className={classes.paper}>
+        <Box sx={style} >
         <ImageUpload setOpen={setOpen} />
-      </div>
+      </Box>
     );
   return (
     <div>

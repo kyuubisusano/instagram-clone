@@ -1,5 +1,5 @@
 import { async } from '@firebase/util'
-import { Button, Input } from '@mui/material'
+import { Button, createTheme, Input } from '@mui/material'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage'
 import React, { useState } from 'react'
@@ -59,13 +59,28 @@ function ImageUpload({setOpen}) {
         
     }
 
+    const theme = createTheme({
+      components: {
+        // Name of the component
+        Button: {
+          styleOverrides: {
+            // Name of the slot
+            root: {
+              // Some CSS
+              color : "white"
+            },
+          },
+        },
+      },
+    });
+
   return (
     <div>
         <form className='popup__form'>
             <Input type='file' onChange={handlefileChange} />
             <Input type='text' placeholder='Add a Caption..' onChange={e => {setCaption(e.target.value)} } value={caption}/>
             <progress value={progress} max="100" />
-            <Button onClick={handleUpload} >
+            <Button onClick={handleUpload}  >
                 Upload
             </Button>
         </form>
