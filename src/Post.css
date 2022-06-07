@@ -15,7 +15,23 @@
 .post__header {
     display: flex;
     align-items: center;
+    padding: 5px;
+    
 }
 .post__avatar {
     margin-right: 5px;
+    margin-left: 10px;
+}
+
+.post__commentSection {
+    padding: 10px;
+}
+
+.post__caption {
+    padding: 10px;
+}
+
+.post__commentInput {
+    padding: 10px;
+    display: flex;
 }

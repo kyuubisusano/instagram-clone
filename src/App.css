@@ -1,20 +1,22 @@
 *{
   margin: 0;
 }
-.app {
+.body {
   background-color: rgb(232, 232, 232);
-
+  
 }
 .app__headerImg{
   height: 25px;
-
 }
 .app__header {
+  position: sticky;
+  top: 0;
   background-color: rgb(255, 255, 255);
   padding: 13px 0 0 12px;
   object-fit: contain;
   border-bottom: 1px solid lightgray;
   display: flex;
+  align-items: center;
 }
 .app__headerRightDiv{
   margin-left: auto; 
@@ -34,4 +36,5 @@ margin-right: 0;
 }
 .app__posts {
   padding: 20px;
+  
 }

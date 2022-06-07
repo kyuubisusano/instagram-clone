@@ -4,15 +4,15 @@ import Post from './components/Post';
 import React, { useState , useEffect } from 'react';
 import { auth, db } from './firebase.js';
 import { collection, getDocs, onSnapshot, orderBy, query } from "firebase/firestore";
-import { Button, getPopoverUtilityClass, Modal } from '@mui/material';
-import CredPopup from './components/CredPopup';
+import { Button, Container, getPopoverUtilityClass, Modal } from '@mui/material';
+import ModalPopup from './components/ModalPopup';
 import ImageUpload from './components/ImageUpload';
 import { Toaster } from 'react-hot-toast';
 
 
-
-
-
+const buttonStyle = {
+  color: "red"
+}
 
 function App() {
 
@@ -21,49 +21,20 @@ function App() {
   const [openLogin,setOpenLogin] = useState(false)
   const [user,setUser] = useState(null)
   const [openUpload,setOpenUpload]  =useState(false)
-  // const [comments,setComments] = useState([])
 
   useEffect( () => {
-  // async function getPosts()
-  // { 
     const postRef = collection(db, "posts")
     const postQuery= query(postRef,orderBy("timestamp"));
     const unsubscribe = onSnapshot(postQuery, (postQuerySnapshot) => {
-      // console.log("data ")
+      setPosts([])
       postQuerySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
         console.log(doc.id, " => ", doc.data());
-
-      //   const commentRef = collection(db, "posts",`${doc.id}`,"comments")
-      //   getDocs(commentRef).then(
-      //   (commentQuerySnapshot) => {
-      //     commentQuerySnapshot.forEach((doc) => {
-      //       // doc.data() is never undefined for query doc snapshots
-      //        console.log("data ")
-      //       console.log(doc.id, " => ", doc.data())
-      //        setComments(commentQuerySnapshot.docs.map(doc=> ({
-      //       id: doc.id,
-      //       comment: doc.data()
-      //     }) ))
-      //     });
-      //   }
-      // )
-     
-
       setPosts(posts => [...posts,{id:doc.id,post:doc.data()}])
 
       });
       
-      // setPosts(querySnapshot.docs.map(doc=> ({
-      //   id: doc.id,
-      //   post: doc.data()
-      // }) ))
-     
     });
   
-// }
-
-  //  getPosts()
 
   return () =>unsubscribe()
 
@@ -88,41 +59,32 @@ function App() {
   return (
     <div className="App">
       <Toaster />
-   { openSignup ? <CredPopup open= {openSignup} setOpen= {setOpenSignup} mode='signup'/> : null}
-   { openLogin ? <CredPopup open= {openLogin} setOpen= {setOpenLogin} mode='login'/> : null}
-   { openUpload ? <CredPopup open= {openUpload} setOpen= {setOpenUpload} mode='upload'/> : null}
+    { openSignup ? <ModalPopup open= {openSignup} setOpen= {setOpenSignup} mode='signup'/> : null}
+    { openLogin ? <ModalPopup open= {openLogin} setOpen= {setOpenLogin} mode='login'/> : null}
+    { openUpload ? <ModalPopup open= {openUpload} setOpen= {setOpenUpload} mode='upload'/> : null}
     <div className='app__header'>
       <img className='app__headerImg' src={logo}/>
 
      { user ? 
        <div className='app__headerRightDiv'>
-          <Button  onClick={() => setOpenUpload(true)}>
-        Upload
-       </Button>
-         <Button onClick={() => {
-        auth.signOut() 
-       }}>
-        Logout
-      </Button></div> :
-      <div className='app__headerRightDiv'>
-       <Button  onClick={() => setOpenSignup(true)}>
-        SignUp
-       </Button>
-       <Button onClick={() => setOpenLogin(true) } >
-        Login
-       </Button>
-      </div>
+          <Button  onClick={() => setOpenUpload(true)}>Upload</Button>
+          <Button  sx={buttonStyle} onClick={() => { auth.signOut() }}>Logout</Button>
+        </div> :
+       <div className='app__headerRightDiv'>
+           <Button  onClick={() => setOpenSignup(true)}>SignUp</Button>
+          <Button onClick={() => setOpenLogin(true) } >Login</Button>
+        </div>
       }
     </div>
 
-    <div className='app__posts'>
+    <Container maxWidth="sm" className='app__posts'>
     {
       posts ? posts.map( ({id,post}) => {
         console.log(post.userName)
-       return( <Post key={id} postId={id} userName={post.userName} imageUrl={post.imageUrl} caption={post.caption}  />);  
+        return( <Post key={id} postId={id} userName={post.userName} imageUrl={post.imageUrl} caption={post.caption} ownerId={post.ownerId} />);  
       }) : <h1>loading...</h1>
-      }
-      </div>
+    }
+    </Container>
      
     </div>
   );

@@ -1,11 +1,12 @@
-import { Avatar, Box } from '@mui/material';
-import { collection, doc as Doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { Avatar, Box, Button, Input, InputBase } from '@mui/material';
+import { addDoc, collection, doc as Doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 import '../Post.css';
+import Comment from './Comment';
 
 const postStyle = {
-  borderRadius: "10px"
+  borderRadius: "8px"
 }
 
 
@@ -13,6 +14,10 @@ function Post({postId,imageUrl,caption,ownerId}) {
 
   const [comments,setComments] = useState([])
   const [owner,setOwner] = useState({});
+  const [postHover,setPostHover] = useState(false)
+
+  const [commentValue,setCommentValue] = useState('')
+
   useEffect(() =>{
     const commentRef = collection(db, "posts",`${postId}`,"comments")
     const q= query(commentRef,orderBy("likes","desc"),limit(3));
@@ -24,7 +29,7 @@ function Post({postId,imageUrl,caption,ownerId}) {
         getDoc(senderRef).then(
           sender => {
               console.log(sender.data())
-              setComments(comments => [...comments, {id: doc.id,comment: doc.data() ,sender: sender.data().userName}])
+              setComments(comments => [...comments, {id: doc.id,comment: doc.data() ,sender: sender.data()}])
           }
         )
       });
@@ -35,7 +40,6 @@ function Post({postId,imageUrl,caption,ownerId}) {
   },[])
 
   useEffect(() => {
-
     const userRef = Doc(db,'users',`${ownerId}`)
     getDoc(userRef).then(
       doc => {
@@ -45,15 +49,30 @@ function Post({postId,imageUrl,caption,ownerId}) {
 
   },[])
 
+  const handleCommentPost = e => {
+    const commentRef = collection(db, "posts",`${postId}`,"comments")
+    const docRef = addDoc(commentRef,{
+      text: commentValue,
+      senderId: auth.currentUser.uid,
+      timeStamp: serverTimestamp(),
+      likes: 0,
+    }).then(
+      () => {
+        setCommentValue('')
+      }
+    )
+  }
+
 
   return (
-    <Box sx={postStyle} className='post'>
+    <Box sx={postStyle} className='post' onMouseEnter={() => setPostHover(true) } onMouseLeave={() => setPostHover(false)} >
        <div className='post__header'>
         <Avatar
+        sx={{ width: 30, height: 30 }}
         className='post__avatar'
         alt={owner.userName}
         src={owner.photoUrl}/>
-        <h3>{owner.userName}</h3>
+        <h4>{owner.userName}</h4>
         </div>
 
     <img className='post__img' src={imageUrl} />
@@ -61,18 +80,36 @@ function Post({postId,imageUrl,caption,ownerId}) {
        {caption} 
       </div> 
     
-    <div className='post_commentSection'>
-      {
-          comments ? comments.map(({ id,comment,sender})=> {
+      { comments.length ? 
+      <div className='post__commentSection' >
+      
+        {
+        comments.map(({ id,comment,sender})=> {
             console.log(comment.text)
            return( 
-            <div key={id} className='post_comment'>
-              <strong>{sender}</strong>{comment.text}
-              </div>
+            // <div key={id} className='post_comment'>
+            //   <strong>{sender}</strong>{comment.text}
+            //   </div>
+            <Comment key={id} commentId={id} comment={comment} sender={sender}/>
            );  
-          }) :  null
+           }) 
+        }
+
+        
+      </div> :  null
       }
-    </div>
+
+{postHover ?
+        <div className='post__commentInput'>
+          <InputBase
+          sx={{ ml: 1, flex: 1 }}
+          placeholder="Add a comment"
+          value={commentValue}
+          onChange={e=> setCommentValue(e.target.value)}
+          />
+          <Button onClick={handleCommentPost} >Post</Button>
+        </div> : <div></div>} 
+
     </Box>  
   )
 }
