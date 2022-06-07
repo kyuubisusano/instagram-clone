@@ -1,5 +1,5 @@
-import { Avatar, Box, Button, Input, InputBase } from '@mui/material';
-import { addDoc, collection, doc as Doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { Avatar, Box, Button, InputBase } from '@mui/material';
+import { addDoc, collection, doc as Doc, getDoc,  limit, onSnapshot, orderBy, query, serverTimestamp,  } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import { auth, db } from '../firebase';
 import '../Post.css';
@@ -14,10 +14,11 @@ function Post({postId,imageUrl,caption,ownerId}) {
 
   const [comments,setComments] = useState([])
   const [owner,setOwner] = useState({});
-  const [postHover,setPostHover] = useState(false)
-
+  const [postHover,setPostHover] = useState(false)  //for showing imput when hovering on post
+  const [onComment,setOnComment] = useState(false)  //for keeping input field field from hiding when using it
   const [commentValue,setCommentValue] = useState('')
 
+  //TODO: shift all comment loading code to Comment component
   useEffect(() =>{
     const commentRef = collection(db, "posts",`${postId}`,"comments")
     const q= query(commentRef,orderBy("likes","desc"),limit(3));
@@ -39,6 +40,7 @@ function Post({postId,imageUrl,caption,ownerId}) {
     return () =>unsubscribe()
   },[])
 
+  //owner data for avatar and name in post header
   useEffect(() => {
     const userRef = Doc(db,'users',`${ownerId}`)
     getDoc(userRef).then(
@@ -51,13 +53,14 @@ function Post({postId,imageUrl,caption,ownerId}) {
 
   const handleCommentPost = e => {
     const commentRef = collection(db, "posts",`${postId}`,"comments")
-    const docRef = addDoc(commentRef,{
+    addDoc(commentRef,{
       text: commentValue,
       senderId: auth.currentUser.uid,
       timeStamp: serverTimestamp(),
       likes: 0,
     }).then(
       () => {
+        setOnComment(false)
         setCommentValue('')
       }
     )
@@ -90,7 +93,7 @@ function Post({postId,imageUrl,caption,ownerId}) {
             // <div key={id} className='post_comment'>
             //   <strong>{sender}</strong>{comment.text}
             //   </div>
-            <Comment key={id} commentId={id} comment={comment} sender={sender}/>
+            <Comment key={id} postId={postId} commentId={id} comment={comment} sender={sender}/>
            );  
            }) 
         }
@@ -99,13 +102,22 @@ function Post({postId,imageUrl,caption,ownerId}) {
       </div> :  null
       }
 
-{postHover ?
+{postHover || onComment ?
         <div className='post__commentInput'>
           <InputBase
           sx={{ ml: 1, flex: 1 }}
           placeholder="Add a comment"
           value={commentValue}
-          onChange={e=> setCommentValue(e.target.value)}
+          required
+          onChange={e=> {
+          
+            setCommentValue(e.target.value)
+            console.log(commentValue)
+            if(!e.target.value || e.target.value.length === 0||commentValue === '')
+            setOnComment(false) 
+            else
+             setOnComment(true)
+          }}
           />
           <Button onClick={handleCommentPost} >Post</Button>
         </div> : <div></div>} 
