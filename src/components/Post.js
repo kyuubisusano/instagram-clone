@@ -18,28 +18,6 @@ function Post({postId,imageUrl,caption,ownerId}) {
   const [onComment,setOnComment] = useState(false)  //for keeping input field field from hiding when using it
   const [commentValue,setCommentValue] = useState('')
 
-  //TODO: shift all comment loading code to Comment component
-  useEffect(() =>{
-    const commentRef = collection(db, "posts",`${postId}`,"comments")
-    const q= query(commentRef,orderBy("likes","desc"),limit(3));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      setComments([])
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
-        const senderRef = Doc(db, "users",`${doc.data().senderId}`)
-        getDoc(senderRef).then(
-          sender => {
-              console.log(sender.data())
-              setComments(comments => [...comments, {id: doc.id,comment: doc.data() ,sender: sender.data()}])
-          }
-        )
-      });
-     
-    });
-
-    return () =>unsubscribe()
-  },[])
-
   //owner data for avatar and name in post header
   useEffect(() => {
     const userRef = Doc(db,'users',`${ownerId}`)
@@ -83,25 +61,9 @@ function Post({postId,imageUrl,caption,ownerId}) {
        {caption} 
       </div> 
     
-      { comments.length ? 
-      <div className='post__commentSection' >
-      
-        {
-        comments.map(({ id,comment,sender})=> {
-            console.log(comment.text)
-           return( 
-            // <div key={id} className='post_comment'>
-            //   <strong>{sender}</strong>{comment.text}
-            //   </div>
-            <Comment key={id} postId={postId} commentId={id} comment={comment} sender={sender}/>
-           );  
-           }) 
-        }
-
+   
+      <Comment postId={postId}  />
         
-      </div> :  null
-      }
-
 {postHover || onComment ?
         <div className='post__commentInput'>
           <InputBase
