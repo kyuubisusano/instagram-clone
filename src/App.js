@@ -28,7 +28,7 @@ function App() {
     const unsubscribe = onSnapshot(postQuery, (postQuerySnapshot) => {
       setPosts([])
       postQuerySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
+        // console.log(doc.id, " => ", doc.data());
       setPosts(posts => [...posts,{id:doc.id,post:doc.data()}])
 
       });
@@ -47,7 +47,7 @@ function App() {
   useEffect(() => {
     auth.onAuthStateChanged((authUser) => {
       if(authUser){
-        console.log(authUser);
+        // console.log(authUser);
         setUser(authUser);
       }
       else{
@@ -63,7 +63,7 @@ function App() {
     { openLogin ? <ModalPopup open= {openLogin} setOpen= {setOpenLogin} mode='login'/> : null}
     { openUpload ? <ModalPopup open= {openUpload} setOpen= {setOpenUpload} mode='upload'/> : null}
     <div className='app__header'>
-      <img className='app__headerImg' src={logo}/>
+      <img className='app__headerImg' alt= "instagram" src={logo}/>
 
      { user ? 
        <div className='app__headerRightDiv'>

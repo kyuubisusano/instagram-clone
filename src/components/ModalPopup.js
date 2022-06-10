@@ -4,10 +4,12 @@ import { getDownloadURL, ref, uploadBytes,} from 'firebase/storage'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import '../App.css';
-import { auth } from '../firebase';
+
 import logo from '../Instagram-Logo.png';
 import ImageUpload from './ImageUpload';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import { auth, db, storage } from '../firebase'
+import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 
   const modalBaseStyle = {
@@ -19,7 +21,6 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
     bgcolor: 'background.paper',
     boxShadow: 24,
     borderRadius: 8,
-    // display: 'flex',
     p: 4,
   }
 
@@ -35,22 +36,34 @@ function ModalPopup
     const [imageSelected,setImageSelected] = useState('');
     const [imageHover,setImageHover]  =useState(false)
 
-    let body = null
+
     const handleSignup = e => {
         e.preventDefault()
         createUserWithEmailAndPassword(auth , email ,password)
         .then((userCredential) => {
           const user = userCredential.user;
-          const imagesRef = ref(Storage, `users/${image.name}`);
+          const imagesRef = ref(storage, `users/${image.name}`);
           const uploadTask = uploadBytes(imagesRef,image)
           uploadTask.then(
             (snapshot) =>{
-              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              console.log("worjing ")
+              getDownloadURL(snapshot.ref).then((downloadURL) => {
                 updateProfile(user, {
                   displayName: userName,
                   photoURL: downloadURL,
                 })
                 .then(() => {
+                  console.log('user ui ',user.uid)
+                  setDoc(doc(db,'users',`${user.uid}`), {
+                    photoUrl: downloadURL,
+                    email: email,
+                    userName: userName,
+                    dateCreated: serverTimestamp(),
+                    likes: 0,
+                    followers: 0,
+                    following: 0
+  
+                })
                   setOpen(false)
                 })
                 .catch((error) => {
@@ -75,8 +88,8 @@ function ModalPopup
             const user = userCredential.user;
             toast(`welcome back ❤️ ${auth.currentUser.displayName} `,{
                 position: 'top-center',
-  // Styling
-  modalBaseStyle: {},
+                // Styling
+                modalBaseStyle: {},
             })
             setOpen(false)
         })
